@@ -72,8 +72,6 @@ class MyLists extends StatefulWidget {
 
 class _MyListsState extends State<MyLists> {
 
-
-
   int _selectedIndex = 0;
   late List<ListTile> _elements;
   double _height = 0;
@@ -88,9 +86,8 @@ class _MyListsState extends State<MyLists> {
         future: DatabaseHandler.getLists(root),
         builder: (context, AsyncSnapshot<List<ListData>> snapshot) {
           if (snapshot.hasData) {
-            buildListView(snapshot);
             return ListView(
-                children: _elements,
+                children: buildListView(snapshot),
             );
           } else {
             return SizedBox();
@@ -98,33 +95,17 @@ class _MyListsState extends State<MyLists> {
         });
   }
 
-   buildListView(AsyncSnapshot<List<ListData>> snapshot) {
-    int index = -1;
-    _elements = snapshot.data!.map((oneList) {
-      index ++;
-      return ListTile(
-        title: Column(
-          children: [
-            ListItem(
-                id: oneList.id,
-                title: oneList.listName,
-                username: oneList.username,
-                description: oneList.description,
-                numberOfChildren: oneList.numberOfChildren),
-            Container(height: _height,)
-          ],
-        ),
-        selectedTileColor: Colors.lightGreen.withOpacity(0.5),
-        selected: oneList.id == _selectedIndex,
-        onTap: () {
-          setState(() {
-            _height = 100;
-            _selectedIndex = oneList.id;
-          });
-        },
-      );
+  List<ListItem> buildListView(AsyncSnapshot<List<ListData>> snapshot) {
+    return snapshot.data!.map((oneList) {
+      return
+        ListItem(
+        id: oneList.id,
+        title: oneList.listName,
+        username: oneList.username,
+        description: oneList.description,
+        numberOfChildren: oneList.numberOfChildren,
+        parentID: oneList.parentID,);
     }).toList();
-
   }
 }
 
@@ -249,6 +230,7 @@ class ListItem extends StatefulWidget {
     required this.username,
     required this.description,
     required this.numberOfChildren,
+    required this.parentID,
   }) : super(key: key);
 
   final int id;
@@ -256,6 +238,7 @@ class ListItem extends StatefulWidget {
   final String username;
   final String description;
   final int numberOfChildren;
+  final int parentID;
 
   @override
   State<ListItem> createState() => _ListItemState();
@@ -263,22 +246,53 @@ class ListItem extends StatefulWidget {
 
 class _ListItemState extends State<ListItem> {
   List<Widget> childrenList = [];
+  double _height = 0;
+  bool open = false;
 
   void expandList() {
     int i = widget.numberOfChildren;
+
+
     print("$i \n");
+    setState(() {
+      if (!open){
+        childrenList.add(Expanded(child: MyLists(root: widget.id)));
+        if(widget.parentID == 0  && widget.numberOfChildren != 0)
+          _height = 600;
+        else
+          _height = 100.0 * i;
+      } else {
+        childrenList.clear();
+        _height = 0.0;
+      }
+      open = !open;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        color: Colors.white.withOpacity(0.7),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: Column(
-            children: buildList(context),
+    return GestureDetector(
+      onTap: expandList,
+      child: Card(
+          color: Colors.white.withOpacity(0.7),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: Column(
+              children: [
+                Column(
+                  children: buildList(context),
+                ),
+                Container(
+                  height: _height,
+                  child: Column(
+                    children: childrenList,
+                  ),
+                )
+
+              ],
+            ),
           ),
-        ),
+      ),
     );
   }
 
@@ -318,32 +332,3 @@ class _ListItemState extends State<ListItem> {
     super.initState();
   }
 }
-
-/*
-Container(
-child: FutureBuilder(
-future: DatabaseHandler.getLists(widget.id),
-builder : (context, AsyncSnapshot<List<ListData>> snapshot) {
-if (snapshot.data != null && snapshot.data!.isNotEmpty){
-expand(snapshot.data!.length);
-return Expanded(
-child: ListView(
-children: snapshot.data!.map(
-(oneList) =>
-ListItem(
-id: oneList.id,
-title: oneList.listName,
-username: oneList.username,
-description: oneList.description,
-),
-).toList()
-),
-);
-} else {
-return Text(
-"fin",
-style: Theme.of(context).textTheme.titleMedium,);
-}
-}
-),
-),*/
