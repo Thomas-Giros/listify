@@ -6,7 +6,7 @@ class ListData {
   final String description;
   final String username;
   final int parentID;
-  final int numberOfChildren;
+  final bool hasChildren;
 
   const ListData({
     required this.id,
@@ -14,7 +14,7 @@ class ListData {
     required this.description,
     required this.username,
     required this.parentID,
-    required this.numberOfChildren,
+    required this.hasChildren,
   });
 
   ListData.fromMap(Map<String, dynamic> res)
@@ -23,7 +23,7 @@ class ListData {
         description = res["description"],
         username = res["username"],
         parentID = res["parentID"],
-        numberOfChildren = res["numberOfChildren"];
+        hasChildren = res["hasChildren"];
 
   Map<String, Object?> toMap() {
     return {
@@ -32,7 +32,7 @@ class ListData {
       'description': description,
       'username': username,
       'parentID': parentID,
-      'numberOfChildren': numberOfChildren
+      'hasChildren': hasChildren
     };
   }
 }

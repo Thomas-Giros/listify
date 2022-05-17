@@ -24,10 +24,59 @@ class DatabaseHandler {
     if (selectResponse.error == null) {
       //print('response.data: ${selectResponse.data}');
     }
-
+    print("db");
     final datalist = selectResponse.data as List;
-
     return datalist.map((e) => ListData.fromMap(e)).toList();
+  }
+
+   createList(String listName, String description, String username,int parentID, bool hasChildren) async {
+    // query data
+    // insert data
+    final insertResponse = await supaBaseclient.from('lists').insert([
+      {
+        //'id': id,
+        'listName': listName,
+        'description': description,
+        'username': username,
+        'parentID': parentID,
+        'hasChildren': hasChildren
+      },
+    ]).execute();
+
+    if (insertResponse.error == null) {
+      //print('insertResponse.data: ${insertResponse.data}');
+    }
+  }
+
+  updateList(int id, String listName, String description, String username, int parentID, bool hasChildren) async {
+    // update data
+    final updateResponse = await supaBaseclient.from('lists').update(
+        {
+          'listName': listName,
+          'description': description,
+          'username': username,
+          'parentID': parentID,
+          'hasChildren': hasChildren
+        })
+        .eq('id', id)
+        .execute();
+
+    if (updateResponse.error == null) {
+      //print('insertResponse.data: ${insertResponse.data}');
+    }
+  }
+
+  deleteList(int id) async {
+    // delete data
+    final updateResponse = await supaBaseclient
+        .from('lists')
+        .delete()
+        .eq('id', id)
+        .execute();
+
+    if (updateResponse.error == null) {
+      //print('insertResponse.data: ${insertResponse.data}');
+    }
   }
 
 }

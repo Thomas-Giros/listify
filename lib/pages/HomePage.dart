@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:listify/pages/NewListPage.dart';
 import 'package:listify/pages/components/SearchBar.dart';
 import 'package:listify/pages/components/TopRow.dart';
-import 'package:listify/pages/components/MyLists.dart';
+import 'package:listify/pages/components/ViewListItem.dart';
 import 'package:listify/pages/components/ActionButtons.dart';
 import 'package:listify/pages/components/CustomPageRoute.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,26 +19,13 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Column(
         children: [
-          TopRow(goToHomePage: goToHomePage,),
+          TopRow(goToHomePage: () {},buttonFunction: goToNewListPage, title: "My Lists",),
           SearchBar(),
-          Expanded(
-            child: MyLists(
-              root: 0,
-            ),
-          ),
+          Expanded(child: ListView(children: [ViewListItem(parentID: -1,)])),
         ],
       ),
       floatingActionButton: ActionButtons(radius: 30 ,goToNewListPage: goToNewListPage,),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
-  }
-
-  goToHomePage(){
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        child:  HomePage(title: "My Lists",),
-      ),
     );
   }
 
