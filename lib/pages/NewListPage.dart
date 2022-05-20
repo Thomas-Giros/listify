@@ -6,9 +6,8 @@ import 'package:listify/pages/HomePage.dart';
 
 
 class NewListPage extends StatefulWidget {
-  NewListPage({Key? key, required this.title}) : super(key: key);
+  NewListPage({Key? key}) : super(key: key);
 
-  final String title;
   final CreateListItem createListItem = CreateListItem(parentID: 0,);
 
   @override
@@ -65,7 +64,7 @@ class _NewListPageState extends State<NewListPage> {
     Navigator.push(
       context,
       CustomPageRoute(
-        child:  NewListPage(title: "New List",),
+        child:  NewListPage(),
       ),
     );
   }

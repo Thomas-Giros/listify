@@ -44,7 +44,7 @@ class TopRow extends StatelessWidget {
   }
 
   Widget buildRawMaterialButton() {
-    if (title == "New List")
+    if (title == "New List" || title == "Modify")
       {
         return RawMaterialButton(
           onPressed: buttonFunction,

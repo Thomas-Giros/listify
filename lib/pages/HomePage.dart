@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       CustomPageRoute(
-        child:  NewListPage(title: "New List",),
+        child:  NewListPage(),
       ),
     );
   }

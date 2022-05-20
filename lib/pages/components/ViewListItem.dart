@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:listify/data/model/ListData.dart';
 import 'package:listify/data/services/DataBaseHandler.dart';
+import 'package:listify/pages/ModifyListPage.dart';
+import 'package:listify/pages/components/ModifyListItem.dart';
+
+import 'package:listify/pages/components/CustomPageRoute.dart';
 
 
 class ViewListItem extends StatefulWidget {
-  ViewListItem({
-    Key? key,
-    this.id,
-    this.title,
-    this.username,
-    this.description,
-    this.hasChildren,
-    required this.parentID,
-    this.parentState
-  }) : super(key: key);
+  ViewListItem(
+      {Key? key,
+      this.id,
+      this.title,
+      this.username,
+      this.description,
+      this.hasChildren,
+      required this.parentID,
+      this.parentState})
+      : super(key: key);
 
   final int? id;
   final String? title;
@@ -58,7 +62,6 @@ class _ViewListItemState extends State<ViewListItem> {
                   children: [Expanded(child: ListView(children: childrenList))],
                 ),
               )
-
             ],
           ),
         ),
@@ -67,72 +70,93 @@ class _ViewListItemState extends State<ViewListItem> {
   }
 
   buildListView(List<ListData> snapshot) {
+    setState(() {
+      snapshot.forEach((oneList) {
+        GlobalKey newkey = GlobalKey();
+        ViewListItem child = ViewListItem(
+          id: oneList.id,
+          title: oneList.listName,
+          username: oneList.username,
+          description: oneList.description,
+          hasChildren: oneList.hasChildren,
+          parentID: oneList.parentID,
+          parentState: this,
+          key: newkey,
+        );
 
-      setState(() {
-        snapshot.forEach((oneList) {
-          GlobalKey newkey = GlobalKey();
-          ViewListItem child = ViewListItem(
-            id: oneList.id,
-            title: oneList.listName,
-            username: oneList.username,
-            description: oneList.description,
-            hasChildren: oneList.hasChildren,
-            parentID: oneList.parentID,
-            parentState: this,
-            key: newkey,
-          );
+        childrenList.add(child);
+        double childHeight = _textSize(
+                child.description!, Theme.of(context).textTheme.titleMedium!)
+            .height;
+        childHeight += 80;
 
-          childrenList.add(child);
-          double childHeight = _textSize(child.description!,Theme.of(context).textTheme.titleMedium!).height;
-          childHeight += 70;
-
-          updateHeightOnCreate(childHeight);
-        });
+        updateHeightOnCreate(childHeight);
+      });
     });
   }
 
   Size _textSize(String text, TextStyle style) {
-
     final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: style), textDirection: TextDirection.ltr)
-      ..layout(minWidth: 0, maxWidth: MediaQuery.of(context).size.width - ( 10 + 10) );
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr)
+      ..layout(minWidth: 0, maxWidth: MediaQuery.of(context).size.width);
     return textPainter.size;
   }
 
+
   List<Widget> buildElement(BuildContext context) {
-    if (widget.parentID == -1 && childrenList.isEmpty){
+    if (widget.parentID == -1 && childrenList.isEmpty) {
       print("2");
 
       DatabaseHandler.getLists(0).then((snapshot) => buildListView(snapshot));
       return [];
-    }
-    else{
-      if (widget.title != null){
+    } else {
+      if (widget.title != null) {
         return [
           Row(
             children: [
               Text(
-                  widget.title!.toUpperCase(),
-                  style: Theme.of(context).textTheme.headline5,
-                ),
+                widget.title!.toUpperCase(),
+                style: Theme.of(context).textTheme.headline5,
+              ),
               Spacer(),
               Text(
                 widget.username!.toUpperCase(),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               PopupMenuButton(
-                  itemBuilder: (context) => [
+                onSelected: (value) {
+                  setState(() {
+                    Navigator.push(
+                      context,
+                      CustomPageRoute(
+                        child:  ModifyListPage(
+                          modifyListItem: ModifyListItem(
+                            parentID: -1,
+                            id: widget.id,
+                            title: widget.title,
+                            username: widget.username,
+                            description: widget.description,
+                            hasChildren: widget.hasChildren,
+
+                          ),
+                        ),
+                      ),
+                    );
+                  });
+                },
+                itemBuilder: (context) => [
                   PopupMenuItem(
-                  child: Text("Modify"),
-                  value: 1,
+                    child: Text("Modify"),
+                    value: 1,
                   ),
                   PopupMenuItem(
-                  child: Text("Copy"),
-                  value: 2,
+                    child: Text("Copy"),
+                    value: 2,
                   )
-                  ],
-                  icon: Icon(Icons.more_vert),
-                ),
+                ],
+                icon: Icon(Icons.more_vert),
+              ),
             ],
           ),
           const SizedBox(
@@ -151,31 +175,24 @@ class _ViewListItemState extends State<ViewListItem> {
         ];
       } else
         return [];
-
     }
   }
 
-  void createElement() {
-
-  }
-
-
-  updateHeightOnDelete(double childrenHeight){
+  updateHeightOnDelete(double childrenHeight) {
     setState(() {
-      totalChildrenHeight -= childrenHeight ;
-      if (widget.parentID != -1){
+      totalChildrenHeight -= childrenHeight;
+      if (widget.parentID != -1) {
         widget.parentState?.updateHeightOnDelete(childrenHeight);
       }
     });
-
   }
 
-  updateHeightOnCreate(double childHeight){
+  updateHeightOnCreate(double childHeight) {
     setState(() {
       totalChildrenHeight += childHeight;
     });
 
-    if (widget.parentID != -1){
+    if (widget.parentID != -1) {
       widget.parentState?.updateHeightOnCreate(childHeight);
     }
   }
@@ -186,16 +203,16 @@ class _ViewListItemState extends State<ViewListItem> {
   }
 
   expand() {
-    if (widget.hasChildren != null && widget.hasChildren == true)
-      {
-        setState(() {
-          if (!open){
-            DatabaseHandler.getLists(widget.id!).then((snapshot) => buildListView(snapshot));
-          } else {
-            deleteElement();
-          }
-          open = !open;
-        });
-      }
+    if (widget.hasChildren != null && widget.hasChildren == true) {
+      setState(() {
+        if (!open) {
+          DatabaseHandler.getLists(widget.id!)
+              .then((snapshot) => buildListView(snapshot));
+        } else {
+          deleteElement();
+        }
+        open = !open;
+      });
+    }
   }
 }

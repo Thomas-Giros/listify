@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:listify/pages/NewListPage.dart';
 import 'package:listify/pages/components/TopRow.dart';
 import 'package:listify/pages/components/ModifyListItem.dart';
 import 'package:listify/pages/components/CustomPageRoute.dart';
 import 'package:listify/pages/HomePage.dart';
 
-
 class ModifyListPage extends StatefulWidget {
-  ModifyListPage({Key? key, required this.title}) : super(key: key);
+  ModifyListPage({Key? key, required this.modifyListItem}) : super(key: key);
 
-  final String title;
-  final ModifyListItem modifyListItem = ModifyListItem(id: 0,);
+  late ModifyListItem modifyListItem;
 
   @override
   State<ModifyListPage> createState() => _ModifyListPageState();
@@ -23,7 +22,7 @@ class _ModifyListPageState extends State<ModifyListPage> {
         children: [
           TopRow(goToHomePage: goToHomePage, buttonFunction: updateListButton, title: "Modify"),
           SizedBox(height: 25,),
-          buildList(),
+          Expanded(child: ListView(children: [widget.modifyListItem])),
         ],
       ),
     );
@@ -37,7 +36,7 @@ class _ModifyListPageState extends State<ModifyListPage> {
 
 
     if (modifyListItem.current != null && modifyListItem.current!.childrenList != []){
-      String title = modifyListItem.current!.widget.title;
+      String title = modifyListItem.current!.widget.title!;
       print(title);
 
       modifyListItem.current!.childrenList.forEach((element) {
@@ -65,7 +64,7 @@ class _ModifyListPageState extends State<ModifyListPage> {
     Navigator.push(
       context,
       CustomPageRoute(
-        child:  ModifyListPage(title: "New List",),
+        child:  NewListPage(),
       ),
     );
   }
