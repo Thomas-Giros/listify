@@ -15,14 +15,13 @@ class ModifyListItem extends StatefulWidget {
       : super(key: key);
 
   late int? id;
-  late String? title;
+  late String? title = "";
   late String? username;
-  late String? description;
+  late String? description = "";
   late bool? hasChildren;
   late int parentID;
   late _ModifyListItemState? parentState;
   late _ModifyListItemState? current;
-
 
   @override
   State<ModifyListItem> createState() => _ModifyListItemState();
@@ -39,31 +38,34 @@ class _ModifyListItemState extends State<ModifyListItem> {
 
   @override
   Widget build(BuildContext context) {
-    print("----");
     widget.current = this;
     return GestureDetector(
       onTap: expand,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-          side: BorderSide(color: Colors.black26, width: 1),
-        ),
-        color: Colors.white.withOpacity(0.7),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: Column(
-            children: [
-              Column(
-                children: buildElement(context),
+      child: buildCard(context),
+    );
+  }
+
+  Card buildCard(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+        side: BorderSide(color: Colors.black26, width: 1),
+      ),
+      color: Colors.white.withOpacity(0.7),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+        child: Column(
+          children: [
+            Column(
+              children: buildElement(context),
+            ),
+            Container(
+              height: itemHeight,
+              child: Column(
+                children: [Expanded(child: ListView(children: childrenList))],
               ),
-              Container(
-                height: itemHeight,
-                child: Column(
-                  children: [Expanded(child: ListView(children: childrenList))],
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -85,62 +87,31 @@ class _ModifyListItemState extends State<ModifyListItem> {
         );
 
         childrenList.add(child);
-        double childHeight = _textSize(
-            child.description!, Theme.of(context).textTheme.titleMedium!)
-            .height;
-        childHeight += baseHeight;
+        double childHeight = baseHeight;
 
         updateHeightOnCreate(childHeight);
       });
     });
   }
 
-  Size _textSize(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: style),
-        textDirection: TextDirection.ltr)
-      ..layout(minWidth: 0, maxWidth: MediaQuery.of(context).size.width);
-    return textPainter.size;
-  }
-
-
   List<Widget> buildElement(BuildContext context) {
-    print("here");
     if (widget.parentID == -1 && childrenList.isEmpty) {
       if (widget.hasChildren!){
         DatabaseHandler.getLists(widget.id!).then((snapshot) => buildListView(snapshot));
         return [];
       } else {
-        print("else");
-
-        return  buildListElementFromExisting(context);
+        return  buildListElements(context);
       }
-
     } else {
-      print("now");
-      if (widget.title != null) {
-        return buildListElementFromExisting(context);
-      } else{
-        print("why");
-        return buildListElementFromScratch(context);
-      }
+      return buildListElements(context);
     }
   }
 
-  List<Widget> buildListElementFromExisting(BuildContext context) {
+  List<Widget> buildListElements(BuildContext context) {
     return [
       Row(
         children: [
-          Flexible(
-            child: TextFormField(
-              initialValue: widget.title,
-              onChanged: (value) {widget.title = value;},
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(),
-              ),
-              style: Theme.of(context).textTheme.headline5,
-            ),
-          ),
+          buildTextFormField(context, true),
           Spacer(),
           Text(
             widget.username!.toUpperCase(),
@@ -150,141 +121,87 @@ class _ModifyListItemState extends State<ModifyListItem> {
       ),
       Row(
         children: [
-          Flexible(
-            child: TextFormField(
-              initialValue: widget.description,
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(),
-              ),
-              style: Theme.of(context).textTheme.titleMedium,
-              onSaved: (String? value) {
-                if (value != null && value.isNotEmpty)
-                  widget.description = value;
-              },
-            ),
-          ),
+          buildTextFormField(context, false),
         ],
       ),
       Container(
         margin: EdgeInsets.all(10.0),
         height: 25,
-        child: Row(
-          children: [
-            Spacer(),
-            RawMaterialButton(
-              onPressed: deleteElement,
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: Icon(
-                Icons.clear,
-                size: 15,
-              ),
-              padding: EdgeInsets.all(2.0),
-              shape: CircleBorder(),
-            ),
-            RawMaterialButton(
-              onPressed: createElement,
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: Icon(
-                Icons.add,
-                size: 15,
-              ),
-              padding: EdgeInsets.all(2.0),
-              shape: CircleBorder(),
-            ),
-            Spacer(),
-          ],
-        ),
+        child: buildListActionsRow(),
       ),
     ];
   }
 
-  List<Widget> buildListElementFromScratch(BuildContext context) {
-    return [
-      Row(
-        children: [
-          Flexible(
-            child: TextFormField(
-              onChanged: (value) {widget.title = value;},
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(),
-                hintText: 'List Title',
-              ),
-              style: Theme.of(context).textTheme.headline5,
-            ),
+  Row buildListActionsRow() {
+    return Row(
+      children: [
+        Spacer(),
+        RawMaterialButton(
+          onPressed: deleteElement,
+          elevation: 2.0,
+          fillColor: Colors.white,
+          child: Icon(
+            Icons.clear,
+            size: 15,
           ),
-          Spacer(),
-          Text(
-            widget.username!.toUpperCase(),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ],
-      ),
-      Row(
-        children: [
-          Flexible(
-            child: TextFormField(
-              decoration: const InputDecoration(
-                border: UnderlineInputBorder(),
-                hintText: 'Description',
-              ),
-              style: Theme.of(context).textTheme.titleMedium,
-              onSaved: (String? value) {
-                if (value != null && value.isNotEmpty)
-                  widget.description = value;
-              },
-            ),
-          ),
-        ],
-      ),
-      Container(
-        margin: EdgeInsets.all(10.0),
-        height: 25,
-        child: Row(
-          children: [
-            Spacer(),
-            RawMaterialButton(
-              onPressed: deleteElement,
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: Icon(
-                Icons.clear,
-                size: 15,
-              ),
-              padding: EdgeInsets.all(2.0),
-              shape: CircleBorder(),
-            ),
-            RawMaterialButton(
-              onPressed: createElement,
-              elevation: 2.0,
-              fillColor: Colors.white,
-              child: Icon(
-                Icons.add,
-                size: 15,
-              ),
-              padding: EdgeInsets.all(2.0),
-              shape: CircleBorder(),
-            ),
-            Spacer(),
-          ],
+          padding: EdgeInsets.all(2.0),
+          shape: CircleBorder(),
         ),
-      ),
-    ];
+        RawMaterialButton(
+          onPressed: createElement,
+          elevation: 2.0,
+          fillColor: Colors.white,
+          child: Icon(
+            Icons.add,
+            size: 15,
+          ),
+          padding: EdgeInsets.all(2.0),
+          shape: CircleBorder(),
+        ),
+        Spacer(),
+      ],
+    );
+  }
+
+  Flexible buildTextFormField(BuildContext context, bool title) {
+    TextFormField textFormField;
+    if (title)
+    {
+      textFormField = TextFormField(
+        initialValue: widget.title,
+        onChanged: (value) {widget.title = value;},
+        decoration: const InputDecoration(
+          border: UnderlineInputBorder(),
+          hintText: 'List Title',
+        ),
+        style: Theme.of(context).textTheme.headline5,
+      );
+    } else
+    {
+      textFormField = TextFormField(
+        initialValue: widget.description,
+        onChanged: (value) {widget.description = value;},
+        decoration: const InputDecoration(
+          border: UnderlineInputBorder(),
+          hintText: 'Description',
+        ),
+        style: Theme.of(context).textTheme.titleMedium,
+      );
+    }
+    return Flexible(child: textFormField);
   }
 
   void createElement() {
-    if (!isExpanded) {expand();}
     GlobalKey newkey = GlobalKey();
     // we use a value of -2 for new children items, so that they don't match existing id's
     ModifyListItem child = ModifyListItem(parentID: widget.id!, id : -2,parentState: this,key: newkey, username: "me",);
     setState(() {
       widget.hasChildren = true;
       childrenList.add(child);
-      print(childrenList.toString());
     });
 
     double childHeight = baseHeight;
+    if (!isExpanded) {expand();}
     updateHeightOnCreate(childHeight);
   }
 
@@ -292,11 +209,7 @@ class _ModifyListItemState extends State<ModifyListItem> {
     setState(() {
       totalChildrenHeight += childHeight;
       itemHeight = totalChildrenHeight;
-      print(totalChildrenHeight.toString());
-      print(itemHeight.toString());
-
     });
-
     if (widget.parentID != -1) {
       widget.parentState?.updateHeightOnCreate(childHeight);
     }
@@ -312,7 +225,6 @@ class _ModifyListItemState extends State<ModifyListItem> {
     });
   }
 
-
   updateHeightOnDelete(double childrenHeight) {
     setState(() {
       totalChildrenHeight -= childrenHeight;
@@ -326,8 +238,6 @@ class _ModifyListItemState extends State<ModifyListItem> {
   updateHeightOnHide(double childrenHeight) {
     setState(() {
       itemHeight -= childrenHeight;
-      print(itemHeight.toString());
-
       if (widget.parentID != -1) {
         widget.parentState?.totalChildrenHeight -= childrenHeight;
         widget.parentState?.updateHeightOnHide(childrenHeight);
@@ -343,16 +253,16 @@ class _ModifyListItemState extends State<ModifyListItem> {
         });
       }
       widget.parentState!.setState(() {
-        List<ModifyListItem> newchildrenList = [];
+        List<ModifyListItem> newChildrenList = [];
 
         for (var element in widget.parentState!.childrenList) {
           if (element != widget){
-            newchildrenList.add(element);
+            newChildrenList.add(element);
           }
         }
-        widget.parentState!.childrenList = newchildrenList;
+        widget.parentState!.childrenList = newChildrenList;
 
-        if (newchildrenList.isEmpty){
+        if (newChildrenList.isEmpty){
           widget.parentState!.widget.hasChildren = false;
         }
 
@@ -363,27 +273,18 @@ class _ModifyListItemState extends State<ModifyListItem> {
         updateHeightOnDelete(baseHeight);
       }
     }
-
   }
 
   expand() {
-
     if (widget.hasChildren != null && widget.hasChildren == true) {
       setState(() {
         if (!isExpanded) {
           if (childrenList.isEmpty)
-            {
-              DatabaseHandler.getLists(widget.id!)
-                  .then((snapshot) => buildListView(snapshot));
-            }
-          else {
-            print("expand");
-            updateHeightOnExpand(totalChildrenHeight);
-          }
-        } else {
-          print("hide");
-          updateHeightOnHide(totalChildrenHeight);
-        }
+            {DatabaseHandler.getLists(widget.id!).then((snapshot) => buildListView(snapshot));}
+          else
+          {updateHeightOnExpand(totalChildrenHeight);}
+        } else
+        {updateHeightOnHide(totalChildrenHeight);}
         isExpanded = !isExpanded;
       });
     }

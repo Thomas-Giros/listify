@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:listify/pages/components/ModifyListItem.dart';
 import 'package:listify/pages/components/TopRow.dart';
-import 'package:listify/pages/components/CreateListItem.dart';
 import 'package:listify/pages/components/CustomPageRoute.dart';
 import 'package:listify/pages/HomePage.dart';
 
@@ -8,7 +8,7 @@ import 'package:listify/pages/HomePage.dart';
 class NewListPage extends StatefulWidget {
   NewListPage({Key? key}) : super(key: key);
 
-  final CreateListItem createListItem = CreateListItem(parentID: 0,);
+  final ModifyListItem createListItem = ModifyListItem(parentID: -1, id: -2, hasChildren: false, username: "me",);
 
   @override
   State<NewListPage> createState() => _NewListPageState();
@@ -32,11 +32,10 @@ class _NewListPageState extends State<NewListPage> {
     saveList(widget.createListItem);
   }
 
-  saveList(CreateListItem createListItem){
-
-
+  saveList(ModifyListItem createListItem){
     if (createListItem.current != null && createListItem.current!.childrenList != []){
-        String title = createListItem.current!.widget.title;
+      String? title = createListItem.current!.widget.title;
+      if (title!.isNotEmpty)
         print(title);
 
       createListItem.current!.childrenList.forEach((element) {

@@ -106,8 +106,6 @@ class _ViewListItemState extends State<ViewListItem> {
 
   List<Widget> buildElement(BuildContext context) {
     if (widget.parentID == -1 && childrenList.isEmpty) {
-      print("2");
-
       DatabaseHandler.getLists(0).then((snapshot) => buildListView(snapshot));
       return [];
     } else {
