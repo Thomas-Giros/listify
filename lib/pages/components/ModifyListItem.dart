@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:listify/data/model/ListData.dart';
 import 'package:listify/data/services/DataBaseHandler.dart';
 
 class ModifyListItem extends StatefulWidget {
   ModifyListItem(
       {Key? key,
-        this.id,
-        this.title,
-        this.username,
-        this.description,
-        this.hasChildren,
+        this.id = -2,
+        this.title = "",
+        this.username = "",
+        this.description = "",
+        this.hasChildren = false,
+        this.hasBeenModified = false,
         required this.parentID,
         this.parentState})
       : super(key: key);
 
-  late int? id;
-  late String? title = "";
-  late String? username;
-  late String? description = "";
-  late bool? hasChildren;
+  late int id;
+  late String title;
+  late String username;
+  late String description;
+  late bool hasChildren;
+  late bool hasBeenModified;
   late int parentID;
   late _ModifyListItemState? parentState;
   late _ModifyListItemState? current;
@@ -52,12 +55,32 @@ class _ModifyListItemState extends State<ModifyListItem> {
         side: BorderSide(color: Colors.black26, width: 1),
       ),
       color: Colors.white.withOpacity(0.7),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-        child: Column(
+      child: buildContainerOfLists(context),
+    );
+  }
+
+  Container buildContainerOfLists(BuildContext context) {
+      if (widget.parentID == -1){
+        return Container(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: buildColumnOfContainerOfLists(context),
+        );
+      } else {
+        return Container(
+          padding: EdgeInsets.fromLTRB(5, 2, 5, 3),
+          child: buildColumnOfContainerOfLists(context),
+        );
+      }
+  }
+
+  Column buildColumnOfContainerOfLists(BuildContext context) {
+    return Column(
           children: [
-            Column(
-              children: buildElement(context),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
+              child: Column(
+                children: buildElement(context),
+              ),
             ),
             Container(
               height: itemHeight,
@@ -66,9 +89,7 @@ class _ModifyListItemState extends State<ModifyListItem> {
               ),
             )
           ],
-        ),
-      ),
-    );
+        );
   }
 
   buildListView(List<ListData> snapshot) {
@@ -96,8 +117,8 @@ class _ModifyListItemState extends State<ModifyListItem> {
 
   List<Widget> buildElement(BuildContext context) {
     if (widget.parentID == -1 && childrenList.isEmpty) {
-      if (widget.hasChildren!){
-        DatabaseHandler.getLists(widget.id!).then((snapshot) => buildListView(snapshot));
+      if (widget.hasChildren){
+        DatabaseHandler.getListsByParentID(widget.id).then((snapshot) => buildListView(snapshot));
         return [];
       } else {
         return  buildListElements(context);
@@ -112,9 +133,9 @@ class _ModifyListItemState extends State<ModifyListItem> {
       Row(
         children: [
           buildTextFormField(context, true),
-          Spacer(),
+          Spacer(flex: 1,),
           Text(
-            widget.username!.toUpperCase(),
+            widget.username.toUpperCase(),
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ],
@@ -168,9 +189,19 @@ class _ModifyListItemState extends State<ModifyListItem> {
     if (title)
     {
       textFormField = TextFormField(
+        maxLength: 50,
+        maxLengthEnforcement: MaxLengthEnforcement.enforced,
         initialValue: widget.title,
-        onChanged: (value) {widget.title = value;},
+        onChanged: (value)
+        {
+            if (widget.title != value){
+              widget.title = value;
+              widget.hasBeenModified = true;
+            }
+        },
         decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.fromLTRB(5, 5, 0, 3),
           border: UnderlineInputBorder(),
           hintText: 'List Title',
         ),
@@ -179,9 +210,19 @@ class _ModifyListItemState extends State<ModifyListItem> {
     } else
     {
       textFormField = TextFormField(
+        maxLength: 200,
+        maxLengthEnforcement: MaxLengthEnforcement.enforced,
         initialValue: widget.description,
-        onChanged: (value) {widget.description = value;},
+        onChanged: (value)
+        {
+          if (widget.description != value){
+            widget.description = value;
+            widget.hasBeenModified = true;
+          }
+        },
         decoration: const InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.fromLTRB(5, 5, 0, 3),
           border: UnderlineInputBorder(),
           hintText: 'Description',
         ),
@@ -194,9 +235,13 @@ class _ModifyListItemState extends State<ModifyListItem> {
   void createElement() {
     GlobalKey newkey = GlobalKey();
     // we use a value of -2 for new children items, so that they don't match existing id's
-    ModifyListItem child = ModifyListItem(parentID: widget.id!, id : -2,parentState: this,key: newkey, username: "me",);
+    ModifyListItem child = ModifyListItem(parentID: widget.id, id : -2,parentState: this,key: newkey, username: "me",);
     setState(() {
-      widget.hasChildren = true;
+
+      if (widget.hasChildren == false){
+        widget.hasChildren = true;
+        widget.hasBeenModified = true;
+      }
       childrenList.add(child);
     });
 
@@ -264,6 +309,7 @@ class _ModifyListItemState extends State<ModifyListItem> {
 
         if (newChildrenList.isEmpty){
           widget.parentState!.widget.hasChildren = false;
+          widget.hasBeenModified = true;
         }
 
       });
@@ -280,7 +326,7 @@ class _ModifyListItemState extends State<ModifyListItem> {
       setState(() {
         if (!isExpanded) {
           if (childrenList.isEmpty)
-            {DatabaseHandler.getLists(widget.id!).then((snapshot) => buildListView(snapshot));}
+            {DatabaseHandler.getListsByParentID(widget.id).then((snapshot) => buildListView(snapshot));}
           else
           {updateHeightOnExpand(totalChildrenHeight);}
         } else

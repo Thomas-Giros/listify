@@ -34,7 +34,7 @@ class TopRow extends StatelessWidget {
           Spacer(),
           Text(
             title.toUpperCase(),
-            style: Theme.of(context).textTheme.headline2,
+            style: Theme.of(context).textTheme.headline3,
           ),
           Spacer(),
           buildRawMaterialButton(),
