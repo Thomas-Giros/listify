@@ -117,52 +117,54 @@ class _ViewListItemState extends State<ViewListItem> {
       return [];
     } else if (widget.parentID == -1 && childrenList.isEmpty && widget.childrenListData.isNotEmpty){
       buildListView(widget.childrenListData);
-      print("fuck");
       return [];
     } else {
       if (widget.title.isNotEmpty) {
         return [
-          Row(
-            children: [
-              Text(
-                widget.title,
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              const Spacer(),
-              Text(
-                widget.username.toUpperCase(),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              PopupMenuButton(
-                onSelected: (value) {
-                  setState(() {
-                    if (value == 1){
-                      onModify();
-                    } else if (value == 2){
-                      onCopy();
-                    } else if (value == 3){
-                      onDelete(widget.id,widget.hasChildren);
-                      deleteElementUI();
-                    }
-                  });
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    child: Text("Modify"),
-                    value: 1,
-                  ),
-                  const PopupMenuItem(
-                    child: Text("Copy"),
-                    value: 2,
-                  ),
-                  const PopupMenuItem(
-                    child: Text("Delete"),
-                    value: 3,
-                  )
-                ],
-                icon: const Icon(Icons.more_vert),
-              ),
-            ],
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              children: [
+                Text(
+                  widget.title,
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                const Spacer(),
+                Text(
+                  widget.username.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                PopupMenuButton(
+                  onSelected: (value) {
+                    setState(() {
+                      if (value == 1){
+                        onModify();
+                      } else if (value == 2){
+                        onCopy();
+                      } else if (value == 3){
+                        onDelete(widget.id,widget.hasChildren);
+                        deleteElementUI();
+                      }
+                    });
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      child: Text("Modify"),
+                      value: 1,
+                    ),
+                    const PopupMenuItem(
+                      child: Text("Copy"),
+                      value: 2,
+                    ),
+                    const PopupMenuItem(
+                      child: Text("Delete"),
+                      value: 3,
+                    )
+                  ],
+                  icon: const Icon(Icons.more_vert),
+                ),
+              ],
+            ),
           ),
           Row(
             children: [

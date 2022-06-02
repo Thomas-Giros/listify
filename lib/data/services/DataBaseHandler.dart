@@ -1,4 +1,5 @@
 import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../model/ListData.dart';
 
 class DatabaseHandler {
@@ -6,9 +7,10 @@ class DatabaseHandler {
 
   static late SupabaseClient supaBaseclient;
 
-  static initializeDB() {
+  static Future<void> initializeDB() async {
     const supabaseUrl = 'https://oyrsacdqbvhsiofaysuw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95cnNhY2RxYnZoc2lvZmF5c3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTE2NzUzMTEsImV4cCI6MTk2NzI1MTMxMX0.A4QAYqMGLiWfkFEeyFk6yk0lQt1eOZpJPaadF0hcqM0';
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
     supaBaseclient = SupabaseClient(supabaseUrl, supabaseKey);
   }
 
@@ -35,8 +37,6 @@ class DatabaseHandler {
     if (search.split(" ").length > 1){
       searchString = "'" + search.trim().replaceAll("  ", " ").replaceAll(" ", "' | '") + "'";
     }
-
-
 
     // query data
     // parent ID with value 0 are considered to be main lists

@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:listify/data/services/DataBaseHandler.dart';
 import 'package:listify/pages/HomePage.dart';
+import 'package:listify/pages/SplashPage.dart';
+import 'package:listify/pages/LoginPage.dart';
+import 'package:listify/pages/AccountPage.dart';
+
+
 
 typedef IntVoidFunc = void Function(int);
 
 void main() {
-  DatabaseHandler.initializeDB();
-  runApp(const MyApp());
+  DatabaseHandler.initializeDB().then((value) {
+    runApp(const MyApp());
+  });
+
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +28,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      initialRoute: '/',
+      routes: <String, WidgetBuilder>{
+        '/': (_) => const SplashPage(),
+        '/login': (_) => const LoginPage(),
+        '/account': (_) => const AccountPage(),
+        '/home': (_) => const HomePage(),
+
+      },
     );
   }
 }
